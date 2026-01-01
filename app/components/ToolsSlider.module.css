@@ -1,0 +1,102 @@
+.sliderContainer {
+    width: 100%;
+    overflow-x: auto;
+    padding: 20px 0;
+    /* Hide scrollbar but keep functionality */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.sliderContainer::-webkit-scrollbar {
+    display: none;
+}
+
+.sliderTrack {
+    display: flex;
+    gap: 20px;
+    padding: 0 20px;
+    /* Side padding for mobile */
+    width: max-content;
+}
+
+.card {
+    width: 280px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    /* Softer shadow */
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 1px solid var(--accent);
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.08);
+}
+
+.cardImage {
+    height: 140px;
+    background: linear-gradient(135deg, var(--primary) 0%, #2C5282 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 3rem;
+    font-weight: 700;
+}
+
+.cardContent {
+    padding: 20px;
+}
+
+.badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.ready {
+    background-color: #DEF7EC;
+    color: #03543F;
+}
+
+.beta {
+    background-color: #FEECDC;
+    color: #9C4221;
+}
+
+.cardContent h3 {
+    font-size: 1.25rem;
+    margin-bottom: 8px;
+    color: var(--foreground);
+}
+
+.cardContent p {
+    font-size: 0.875rem;
+    color: #666;
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+
+.actionBtn {
+    width: 100%;
+    padding: 10px;
+    background: white;
+    border: 2px solid var(--primary);
+    color: var(--primary);
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.actionBtn:hover {
+    background: var(--primary);
+    color: white;
+}

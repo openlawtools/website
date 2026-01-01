@@ -1,0 +1,109 @@
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 40px;
+}
+
+.item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: white;
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid var(--accent);
+}
+
+.voteBox {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 50px;
+    padding: 8px;
+    background: #F0F4F8;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+    color: var(--primary);
+}
+
+.voteBox:hover {
+    background: #E2E8F0;
+}
+
+.chevron {
+    font-size: 0.8rem;
+    margin-bottom: 2px;
+}
+
+.count {
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.info h4 {
+    margin-bottom: 4px;
+    color: var(--foreground);
+}
+
+.info p {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.form {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    border: 1px dashed var(--border);
+}
+
+.form h3 {
+    margin-bottom: 16px;
+    font-size: 1.1rem;
+}
+
+.inputGroup {
+    display: flex;
+    gap: 12px;
+}
+
+.input {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 1rem;
+    outline: none;
+}
+
+.input:focus {
+    border-color: var(--primary);
+}
+
+.btn {
+    padding: 0 24px;
+    background: var(--foreground);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+@media (max-width: 480px) {
+    .inputGroup {
+        flex-direction: column;
+    }
+
+    .btn {
+        padding: 12px;
+    }
+}
