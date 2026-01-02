@@ -425,7 +425,7 @@ const ParentingScheduleVisualizer = () => {
         </div>
       </section>
       
-      <main className="container mx-auto px-4 py-8 max-w-7xl">
+      <main className="mx-auto px-4 py-8 max-w-7xl">
         {/* Main Content */}
         <div className="grid lg:grid-cols-[400px_1fr] gap-6 mb-8">
           {/* Sidebar Form */}
