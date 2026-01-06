@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import Link from 'next/link';
 import styles from './ToolsSlider.module.css';
 
 interface Tool {
@@ -8,6 +9,7 @@ interface Tool {
     description: string;
     image?: string;
     status: 'Ready' | 'Beta';
+    link: string;
 }
 
 const tools: Tool[] = [
@@ -15,19 +17,22 @@ const tools: Tool[] = [
         id: 'custody',
         title: 'Custody Visualizer',
         description: 'Easily create and visualize parenting schedules. Drag-and-drop calendar interface to reduce conflict.',
-        status: 'Ready'
+        status: 'Ready',
+        link: '/parenting-schedule-visualizer'
     },
     {
         id: 'support-calc',
         title: 'Support Calculator',
         description: 'Open source child support estimator based on state guidelines.',
-        status: 'Beta'
+        status: 'Beta',
+        link: '#'
     },
     {
         id: 'doc-gen',
         title: 'Doc Gen',
         description: 'Automated legal document generation for common filings.',
-        status: 'Beta'
+        status: 'Beta',
+        link: '#'
     }
 ];
 
@@ -46,7 +51,9 @@ export default function ToolsSlider() {
                             </span>
                             <h3>{tool.title}</h3>
                             <p>{tool.description}</p>
-                            <button className={styles.actionBtn}>Open Tool</button>
+                            <Link href={tool.link} className={styles.actionBtn}>
+                                Open Tool
+                            </Link>
                         </div>
                     </div>
                 ))}
