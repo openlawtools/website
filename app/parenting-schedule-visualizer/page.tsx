@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -14,10 +14,11 @@ import ScheduleStats from '../components/schedule/ScheduleStats';
 const ParentingScheduleVisualizer = () => {
   const [startDate, setStartDate] = useState('');
   const [scheduleType, setScheduleType] = useState('alternating-weeks');
+  const [childrenNames, setchildrenNames] = useState('');
   const [parentAName, setParentAName] = useState('Parent 1');
   const [parentBName, setParentBName] = useState('Parent 2');
-  const [parentAColor, setParentAColor] = useState('#4A90E2');
-  const [parentBColor, setParentBColor] = useState('#F5A623');
+  const [parentAColor, setParentAColor] = useState('#7ea591');
+  const [parentBColor, setParentBColor] = useState('#c181a3');
   const [schedule, setSchedule] = useState<any>(null);
   const [baseSchedule, setBaseSchedule] = useState<any>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -31,28 +32,56 @@ const ParentingScheduleVisualizer = () => {
     email: '',
     phone: '',
     zipCode: '',
-    wantConsultation: false
+    wantConsultation: false,
+    effectiveDate: '',
+    jurisdiction: '',
+    caseNumber: ''
   });
 
   const currentYear = new Date().getFullYear();
-  const [holidays, setHolidays] = useState<any[]>([
-    { id: 'thanksgiving', name: 'Thanksgiving', date: `${currentYear}-11-28`, enabled: false, parent: parentAName },
-    { id: 'christmas-eve', name: 'Christmas Eve', date: `${currentYear}-12-24`, enabled: false, parent: parentAName },
-    { id: 'christmas', name: 'Christmas Day', date: `${currentYear}-12-25`, enabled: false, parent: parentAName },
-    { id: 'new-years', name: "New Year's Day", date: `${currentYear + 1}-01-01`, enabled: false, parent: parentAName },
-    { id: 'mothers-day', name: "Mother's Day", date: `${currentYear}-05-11`, enabled: false, parent: parentAName },
-    { id: 'fathers-day', name: "Father's Day", date: `${currentYear}-06-15`, enabled: false, parent: parentAName },
-    { id: 'spring-break', name: 'Spring Break (week)', date: `${currentYear}-03-24`, enabled: false, parent: parentAName },
-    { id: 'summer-break', name: 'Summer Break (2 weeks)', date: `${currentYear}-07-01`, enabled: false, parent: parentAName },
+  const [holidays, setHolidays] = useState<any[]>(() => [
+    { id: 'thanksgiving', name: 'Thanksgiving', date: `${currentYear}-11-28`, enabled: false, parent: 'Parent 1' },
+    { id: 'christmas-eve', name: 'Christmas Eve', date: `${currentYear}-12-24`, enabled: false, parent: 'Parent 1' },
+    { id: 'christmas', name: 'Christmas Day', date: `${currentYear}-12-25`, enabled: false, parent: 'Parent 1' },
+    { id: 'new-years', name: "New Year's Day", date: `${currentYear + 1}-01-01`, enabled: false, parent: 'Parent 1' },
+    { id: 'mothers-day', name: "Mother's Day", date: `${currentYear}-05-11`, enabled: false, parent: 'Parent 1' },
+    { id: 'fathers-day', name: "Father's Day", date: `${currentYear}-06-15`, enabled: false, parent: 'Parent 1' },
+    { id: 'spring-break', name: 'Spring Break (week)', date: `${currentYear}-03-24`, enabled: false, parent: 'Parent 1' },
+    { id: 'summer-break', name: 'Summer Break (2 weeks)', date: `${currentYear}-07-01`, enabled: false, parent: 'Parent 1' },
   ]);
 
-  const toggleHoliday = (id: string) => {
+  const toggleHoliday = useCallback((id: string) => {
     setHolidays((prev: any[]) =>
       prev.map((h: any) =>
         h.id === id ? { ...h, enabled: !h.enabled } : h
       )
     );
-  };
+  }, []);
+
+  // Memoized input handlers to prevent re-creating on every render
+  const handleStartDateChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setStartDate(e.target.value);
+  }, []);
+
+  const handlechildrenNamesChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setchildrenNames(e.target.value);
+  }, []);
+
+  const handleParentANameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setParentAName(e.target.value);
+  }, []);
+
+  const handleParentBNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setParentBName(e.target.value);
+  }, []);
+
+  const handleParentAColorChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setParentAColor(e.target.value);
+  }, []);
+
+  const handleParentBColorChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setParentBColor(e.target.value);
+  }, []);
 
   // Regenerate schedule when holidays change
   useEffect(() => {
@@ -133,27 +162,25 @@ const ParentingScheduleVisualizer = () => {
           const currentDate = addDays(start, i);
           const dayOfWeek = getDayOfWeek(currentDate);
           let currentParent;
-          let isTransition = false;
 
           if (dayOfWeek === 1) { // Monday
             currentParent = parentAName;
-            isTransition = true;
           } else if (dayOfWeek === 2) { // Tuesday
             currentParent = parentAName;
           } else if (dayOfWeek === 3) { // Wednesday
             currentParent = parentBName;
-            isTransition = true;
           } else if (dayOfWeek === 4) { // Thursday
             currentParent = parentBName;
           } else { // Friday, Saturday, Sunday
-            if (dayOfWeek === 5) { // Friday
-              isTransition = true;
-            }
             currentParent = weekendParent;
             if (dayOfWeek === 0) { // Sunday - switch for next weekend
               weekendParent = weekendParent === parentAName ? parentBName : parentAName;
             }
           }
+
+          // Check if parent changed from previous day
+          const previousParent = i > 0 ? scheduleData[i - 1].parent : null;
+          const isTransition = previousParent !== null && currentParent !== previousParent;
 
           scheduleData.push({
             date: formatDate(currentDate),
@@ -169,23 +196,25 @@ const ParentingScheduleVisualizer = () => {
           const currentDate = addDays(start, i);
           const dayOfWeek = getDayOfWeek(currentDate);
           let currentParent;
-          let isTransition = false;
 
-          if (dayOfWeek === 1) {
+          if (dayOfWeek === 1) { // Monday
             currentParent = parentAName;
-            isTransition = true;
-          } else if (dayOfWeek === 2) {
+          } else if (dayOfWeek === 2) { // Tuesday
             currentParent = parentAName;
-          } else if (dayOfWeek === 3) {
+          } else if (dayOfWeek === 3) { // Wednesday
             currentParent = parentBName;
-            isTransition = true;
-          } else if (dayOfWeek === 4) {
+          } else if (dayOfWeek === 4) { // Thursday
             currentParent = parentBName;
-          } else {
-            if (dayOfWeek === 5) isTransition = true;
+          } else { // Friday, Saturday, Sunday
             currentParent = weekendParent;
-            if (dayOfWeek === 0) weekendParent = weekendParent === parentAName ? parentBName : parentAName;
+            if (dayOfWeek === 0) { // Sunday - switch for next weekend
+              weekendParent = weekendParent === parentAName ? parentBName : parentAName;
+            }
           }
+
+          // Check if parent changed from previous day
+          const previousParent = i > 0 ? scheduleData[i - 1].parent : null;
+          const isTransition = previousParent !== null && currentParent !== previousParent;
 
           scheduleData.push({
             date: formatDate(currentDate),
@@ -262,7 +291,9 @@ const ParentingScheduleVisualizer = () => {
     setSchedule(scheduleData);
     setIsGenerating(false);
     setShowSuccess(true);
-    
+
+    // console.log('Schedule generated successfully:', scheduleData);
+
     // Hide success message after 3 seconds
     setTimeout(() => setShowSuccess(false), 3000);
     }, 800);
@@ -332,7 +363,11 @@ const ParentingScheduleVisualizer = () => {
         parentBName: parentBName,
         parentAColor: parentAColor,
         parentBColor: parentBColor,
-        holidays: holidays.filter((h: any) => h.enabled)
+        holidays: holidays.filter((h: any) => h.enabled),
+        effectiveDate: pdfFormData.effectiveDate,
+        jurisdiction: pdfFormData.jurisdiction,
+        caseNumber: pdfFormData.caseNumber,
+        childrenNames: childrenNames
       };
 
       const googleForm = document.forms.namedItem('google-sheet');
@@ -367,6 +402,7 @@ const ParentingScheduleVisualizer = () => {
         console.error('Error sending to Google Script:', googleError);
       }
 
+      console.log('Request Data for PDF:', requestData);
       const pdfResponse = await fetch(
         'https://api.ovlg.com/v3/api/start/public/index.php/api/forum-lex-pdf-download',
         {
@@ -396,12 +432,15 @@ const ParentingScheduleVisualizer = () => {
         email: '',
         phone: '',
         zipCode: '',
-        wantConsultation: false
+        wantConsultation: false,
+        effectiveDate: '',
+        jurisdiction: '',
+        caseNumber: ''
       });
 
     } catch (error) {
       console.error('Error generating PDF:', error);
-      alert('Failed to generate PDF. Please try again.');
+      //alert('Failed to generate PDF. Please try again.');
     } finally {
       setIsDownloading(false);
     }
@@ -448,7 +487,7 @@ const ParentingScheduleVisualizer = () => {
                       id="startDate"
                       type="date"
                       value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
+                      onChange={handleStartDateChange}
                       required
                     />
                   </div>
@@ -477,6 +516,21 @@ const ParentingScheduleVisualizer = () => {
                   </div>
                 </div>
 
+                {/* Child Name */}
+                <div className="space-y-4 pt-4 border-t">
+                  <h3 className="font-semibold text-lg">Child Information</h3>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="childrenNames">Child's Name</Label>
+                    <Input
+                      id="childrenNames"
+                      value={childrenNames}
+                      onChange={handlechildrenNamesChange}
+                      placeholder="Enter child's name"
+                    />
+                  </div>
+                </div>
+
                 {/* Parent A Settings */}
                 <div className="space-y-4 pt-4 border-t">
                   <h3 className="font-semibold text-lg">Parent A</h3>
@@ -487,7 +541,7 @@ const ParentingScheduleVisualizer = () => {
                       <Input
                         id="parentAName"
                         value={parentAName}
-                        onChange={(e) => setParentAName(e.target.value)}
+                        onChange={handleParentANameChange}
                         placeholder="Parent 1"
                       />
                     </div>
@@ -498,7 +552,7 @@ const ParentingScheduleVisualizer = () => {
                         id="parentAColor"
                         type="color"
                         value={parentAColor}
-                        onChange={(e) => setParentAColor(e.target.value)}
+                        onChange={handleParentAColorChange}
                         className="w-10 h-10"
                       />
                     </div>
@@ -515,7 +569,7 @@ const ParentingScheduleVisualizer = () => {
                       <Input
                         id="parentBName"
                         value={parentBName}
-                        onChange={(e) => setParentBName(e.target.value)}
+                        onChange={handleParentBNameChange}
                         placeholder="Parent 2"
                       />
                     </div>
@@ -526,7 +580,7 @@ const ParentingScheduleVisualizer = () => {
                         id="parentBColor"
                         type="color"
                         value={parentBColor}
-                        onChange={(e) => setParentBColor(e.target.value)}
+                        onChange={handleParentBColorChange}
                         className="w-10 h-10"
                       />
                     </div>
@@ -725,6 +779,45 @@ const ParentingScheduleVisualizer = () => {
                 placeholder="(555) 123-4567"
                 value={pdfFormData.phone}
                 onChange={(e) => setPdfFormData({ ...pdfFormData, phone: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="pdfEffectiveDate">
+                Effective Date <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="pdfEffectiveDate"
+                type="date"
+                value={pdfFormData.effectiveDate}
+                onChange={(e) => setPdfFormData({ ...pdfFormData, effectiveDate: e.target.value })}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="pdfJurisdiction">
+                Jurisdiction <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="pdfJurisdiction"
+                placeholder="County, State"
+                value={pdfFormData.jurisdiction}
+                onChange={(e) => setPdfFormData({ ...pdfFormData, jurisdiction: e.target.value })}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="pdfCaseNumber">
+                Case Number <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="pdfCaseNumber"
+                placeholder="e.g., 2024-CV-12345"
+                value={pdfFormData.caseNumber}
+                onChange={(e) => setPdfFormData({ ...pdfFormData, caseNumber: e.target.value })}
+                required
               />
             </div>
 
