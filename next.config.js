@@ -1,9 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Enable Node.js compatibility for Cloudflare Workers
-  experimental: {
-    runtime: 'experimental-edge',
-  },
+  // Add empty turbopack config to silence the warning
+  turbopack: {},
   
   // Cloudflare-specific configurations
   webpack: (config, { isServer }) => {
