@@ -368,7 +368,8 @@ const ParentingScheduleVisualizer = () => {
         effectiveDate: pdfFormData.effectiveDate,
         jurisdiction: pdfFormData.jurisdiction,
         caseNumber: pdfFormData.caseNumber,
-        childrenNames: childrenNames
+        childrenNames: childrenNames,
+        currentYear: new Date(startDate).getFullYear()
       };
 
       const googleForm = document.forms.namedItem('google-sheet');

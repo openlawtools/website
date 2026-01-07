@@ -12,7 +12,7 @@ export default function Navbar() {
         <nav className={styles.navbar}>
             <div className={`container ${styles.navContainer}`}>
                 <Link href="/" className={styles.logo}>
-                    OpenLawTools
+                    TheLegalProject
                 </Link>
                 <div className={styles.links}>
                     <Link href="/" className={`${styles.link} ${isActive('/') ? styles.active : ''}`}>
