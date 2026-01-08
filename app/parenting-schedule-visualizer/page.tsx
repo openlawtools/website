@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Calendar, Users, Info, FileText, Gift, FileDown, Sparkles, CheckCircle2, Clock } from 'lucide-react';
 import ScheduleCalendar from '../components/schedule/ScheduleCalendar';
 import ScheduleStats from '../components/schedule/ScheduleStats';
+import { insertParentingSchedule } from '../../lib/supabase';
 
 const ParentingScheduleVisualizer = () => {
   const [startDate, setStartDate] = useState('');
@@ -404,6 +405,34 @@ const ParentingScheduleVisualizer = () => {
         console.error('Error sending to Google Script:', googleError);
       }
 
+      // // Insert data into Supabase
+      // try {
+      //   const supabaseData = {
+      //     full_name: pdfFormData.fullName,
+      //     case_number: pdfFormData.caseNumber,
+      //     children_names: childrenNames,
+      //     phone: pdfFormData.phone,
+      //     email: pdfFormData.email,
+      //     holidays: holidays.filter((h: any) => h.enabled),
+      //     schedule_type: scheduleType,
+      //     start_date: startDate,
+      //     effective_date: pdfFormData.effectiveDate,
+      //     want_consultation: pdfFormData.wantConsultation,
+      //     zip_code: pdfFormData.zipCode,
+      //     parent_a_name: parentAName,
+      //     parent_a_color: parentAColor,
+      //     parent_b_name: parentBName,
+      //     parent_b_color: parentBColor,
+      //     jurisdiction: pdfFormData.jurisdiction,
+      //   };
+
+      //   const result = await insertParentingSchedule(supabaseData);
+      //   console.log('Successfully inserted into Supabase:', result);
+      // } catch (supabaseError) {
+      //   console.error('Error inserting into Supabase:', supabaseError);
+      //   // Don't block the PDF download if Supabase fails
+      // }
+
       //console.log('Request Data for PDF:', requestData); 
       const pdfResponse = await fetch(
         'https://api.ovlg.com/v3/api/start/public/index.php/api/forum-lex-pdf-download',
@@ -420,13 +449,13 @@ const ParentingScheduleVisualizer = () => {
         throw new Error('Failed to generate PDF');
       }
 
-      const blob = await pdfResponse.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `parenting-schedule-${startDate}.pdf`;
-      a.click();
-      window.URL.revokeObjectURL(url);
+      // const blob = await pdfResponse.blob();
+      // const url = window.URL.createObjectURL(blob);
+      // const a = document.createElement('a');
+      // a.href = url;
+      // a.download = `parenting-schedule-${startDate}.pdf`;
+      // a.click();
+      // window.URL.revokeObjectURL(url);
 
       setShowPdfDialog(false);
       setPdfFormData({
@@ -738,7 +767,7 @@ const ParentingScheduleVisualizer = () => {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <FileDown className="w-5 h-5 text-purple-600" />
-              Download Schedule as PDF
+              Get Schedule as PDF via email
             </DialogTitle>
             <DialogDescription>
               Please provide your information to download your personalized parenting schedule.
@@ -876,7 +905,7 @@ const ParentingScheduleVisualizer = () => {
                 ) : (
                   <>
                     <FileDown className="w-4 h-4 mr-2" />
-                    Download PDF
+                    Email PDF
                   </>
                 )}
               </Button>
