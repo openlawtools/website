@@ -2,6 +2,7 @@
 import { Button } from "../ui/button";
 import Link from "next/link";
 
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import styles from '../Navbar.module.css';
 
@@ -15,11 +16,16 @@ const Navbar = () => {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="container flex h-16 items-center justify-between">
-        <a href="/" className="flex items-center gap-2">
-          <span className="font-serif text-xl font-bold text-primary">
-            TheLegalProject
-          </span>
-        </a>
+         <Link href="/" className={styles.logo}>
+                    <Image 
+                        src="/logo.jpg" 
+                        alt="The Legal Project Logo" 
+                        width={32} 
+                        height={32}
+                        className={styles.logoImage}
+                    />
+                    <span>TheLegalProject</span>
+                </Link>
 
         <nav className="hidden md:flex items-center gap-8">
           <a

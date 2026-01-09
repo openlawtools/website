@@ -7,6 +7,9 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
     title: 'Open Law Tools',
     description: 'Democratizing legal help with open source tools.',
+    icons: {
+        icon: '/favicon.svg',
+    },
 };
 
 import Navbar from './components/layout/Navbar';

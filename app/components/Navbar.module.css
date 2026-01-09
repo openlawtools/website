@@ -18,6 +18,18 @@
     font-size: 1.25rem;
     color: var(--primary);
     text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logoImage {
+    color: var(--primary);
+    transition: transform 0.2s ease;
+}
+
+.logo:hover .logoImage {
+    transform: scale(1.05);
 }
 
 .links {

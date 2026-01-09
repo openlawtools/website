@@ -33,7 +33,7 @@ const MissionCTA = () => {
               <Button 
                 variant="outline" 
                 size="lg"
-                className="w-full sm:w-auto border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10"
+                className="w-full sm:w-auto border-primary-foreground/30 hover:bg-primary-foreground/10"
               >
                 <Map className="w-4 h-4 mr-2" />
                 View Roadmap

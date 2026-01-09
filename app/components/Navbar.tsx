@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import styles from './Navbar.module.css';
 
@@ -12,7 +13,14 @@ export default function Navbar() {
         <nav className={styles.navbar}>
             <div className={`container ${styles.navContainer}`}>
                 <Link href="/" className={styles.logo}>
-                    TheLegalProject
+                    <Image 
+                        src="/logo.svg" 
+                        alt="The Legal Project Logo" 
+                        width={32} 
+                        height={32}
+                        className={styles.logoImage}
+                    />
+                    <span>TheLegalProject</span>
                 </Link>
                 <div className={styles.links}>
                     <Link href="/" className={`${styles.link} ${isActive('/') ? styles.active : ''}`}>
