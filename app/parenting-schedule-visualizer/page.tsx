@@ -12,6 +12,9 @@ import ScheduleCalendar from '../components/schedule/ScheduleCalendar';
 import ScheduleStats from '../components/schedule/ScheduleStats';
 import { supabase } from '../../lib/supabase';
 
+// Disable static generation for this page
+export const dynamic = 'force-dynamic';
+
 const ParentingScheduleVisualizer = () => {
   const [startDate, setStartDate] = useState('');
   const [scheduleType, setScheduleType] = useState('alternating-weeks');
@@ -25,7 +28,7 @@ const ParentingScheduleVisualizer = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // PDF Download Dialog State
+  // PDF Download Dialog State with localStorage
   const [showPdfDialog, setShowPdfDialog] = useState(false);
   const [showPdfSuccess, setShowPdfSuccess] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -37,20 +40,82 @@ const ParentingScheduleVisualizer = () => {
     wantConsultation: false,
     effectiveDate: '',
     jurisdiction: '',
-    caseNumber: ''
+    caseNumber: '',
+    // Schedule configuration fields
+    startDate: '',
+    scheduleType: 'alternating-weeks',
+    childrenNames: '',
+    parentAName: 'Parent 1',
+    parentBName: 'Parent 2',
+    parentAColor: '#7ea591',
+    parentBColor: '#c181a3'
   });
 
+  // Load all data (PDF form + Schedule config) from localStorage on mount
+  useEffect(() => {
+    const savedFormData = localStorage.getItem('pdfFormData');
+    if (savedFormData) {
+      try {
+        const parsedData = JSON.parse(savedFormData);
+        setPdfFormData(parsedData);
+        
+        // Restore schedule configuration if it exists in saved data
+        if (parsedData.startDate) setStartDate(parsedData.startDate);
+        if (parsedData.scheduleType) setScheduleType(parsedData.scheduleType);
+        if (parsedData.childrenNames) setchildrenNames(parsedData.childrenNames);
+        if (parsedData.parentAName) setParentAName(parsedData.parentAName);
+        if (parsedData.parentBName) setParentBName(parsedData.parentBName);
+        if (parsedData.parentAColor) setParentAColor(parsedData.parentAColor);
+        if (parsedData.parentBColor) setParentBColor(parsedData.parentBColor);
+      } catch (error) {
+        console.error('Error loading saved form data:', error);
+      }
+    }
+  }, []);
+
+  // Save all data (PDF form + Schedule config) to localStorage whenever any changes
+  useEffect(() => {
+    const allData = {
+      ...pdfFormData,
+      startDate,
+      scheduleType,
+      childrenNames,
+      parentAName,
+      parentBName,
+      parentAColor,
+      parentBColor
+    };
+    localStorage.setItem('pdfFormData', JSON.stringify(allData));
+  }, [pdfFormData, startDate, scheduleType, childrenNames, parentAName, parentBName, parentAColor, parentBColor]);
+
   const currentYear = new Date().getFullYear();
-  const [holidays, setHolidays] = useState<any[]>(() => [
-    { id: 'thanksgiving', name: 'Thanksgiving', date: `${currentYear}-11-28`, enabled: false, parent: 'Parent 1' },
-    { id: 'christmas-eve', name: 'Christmas Eve', date: `${currentYear}-12-24`, enabled: false, parent: 'Parent 1' },
-    { id: 'christmas', name: 'Christmas Day', date: `${currentYear}-12-25`, enabled: false, parent: 'Parent 1' },
-    { id: 'new-years', name: "New Year's Day", date: `${currentYear + 1}-01-01`, enabled: false, parent: 'Parent 1' },
-    { id: 'mothers-day', name: "Mother's Day", date: `${currentYear}-05-11`, enabled: false, parent: 'Parent 1' },
-    { id: 'fathers-day', name: "Father's Day", date: `${currentYear}-06-15`, enabled: false, parent: 'Parent 1' },
-    { id: 'spring-break', name: 'Spring Break (week)', date: `${currentYear}-03-24`, enabled: false, parent: 'Parent 1' },
-    { id: 'summer-break', name: 'Summer Break (2 weeks)', date: `${currentYear}-07-01`, enabled: false, parent: 'Parent 1' },
-  ]);
+  const [holidays, setHolidays] = useState<any[]>(() => {
+    // Try to load from localStorage first
+    const savedHolidays = localStorage.getItem('scheduleHolidays');
+    if (savedHolidays) {
+      try {
+        return JSON.parse(savedHolidays);
+      } catch (error) {
+        console.error('Error loading saved holidays:', error);
+      }
+    }
+    // Default holidays if nothing saved
+    return [
+      { id: 'thanksgiving', name: 'Thanksgiving', date: `${currentYear}-11-28`, enabled: false, parent: 'Parent 1' },
+      { id: 'christmas-eve', name: 'Christmas Eve', date: `${currentYear}-12-24`, enabled: false, parent: 'Parent 1' },
+      { id: 'christmas', name: 'Christmas Day', date: `${currentYear}-12-25`, enabled: false, parent: 'Parent 1' },
+      { id: 'new-years', name: "New Year's Day", date: `${currentYear + 1}-01-01`, enabled: false, parent: 'Parent 1' },
+      { id: 'mothers-day', name: "Mother's Day", date: `${currentYear}-05-11`, enabled: false, parent: 'Parent 1' },
+      { id: 'fathers-day', name: "Father's Day", date: `${currentYear}-06-15`, enabled: false, parent: 'Parent 1' },
+      { id: 'spring-break', name: 'Spring Break (week)', date: `${currentYear}-03-24`, enabled: false, parent: 'Parent 1' },
+      { id: 'summer-break', name: 'Summer Break (2 weeks)', date: `${currentYear}-07-01`, enabled: false, parent: 'Parent 1' },
+    ];
+  });
+
+  // Save holidays to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('scheduleHolidays', JSON.stringify(holidays));
+  }, [holidays]);
 
   const toggleHoliday = useCallback((id: string) => {
     setHolidays((prev: any[]) =>
@@ -342,6 +407,14 @@ const ParentingScheduleVisualizer = () => {
     setShowPdfDialog(true);
   };
 
+  // Memoized handlers for PDF form fields
+  const handlePdfFormChange = useCallback((field: string, value: string | boolean) => {
+    setPdfFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  }, []);
+
   const handlePdfFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -353,64 +426,64 @@ const ParentingScheduleVisualizer = () => {
     setIsDownloading(true);
 
     const requestData = {
-        fullName: pdfFormData.fullName,
-        email: pdfFormData.email,
+      fullName: pdfFormData.fullName,
+      email: pdfFormData.email,
+      phone: pdfFormData.phone,
+      zipCode: pdfFormData.zipCode,
+      wantConsultation: pdfFormData.wantConsultation,
+      schedule: schedule,
+      startDate: startDate,
+      scheduleType: scheduleType,
+      parentAName: parentAName,
+      parentBName: parentBName,
+      parentAColor: parentAColor,
+      parentBColor: parentBColor,
+      holidays: holidays.filter((h: any) => h.enabled),
+      effectiveDate: pdfFormData.effectiveDate,
+      jurisdiction: pdfFormData.jurisdiction,
+      caseNumber: pdfFormData.caseNumber,
+      childrenNames: childrenNames,
+      currentYear: new Date(startDate).getFullYear()
+    };
+
+    // Insert data into Supabase directly
+    try {
+      // Prepare data for insertion
+      const supabaseData = {
+        full_name: pdfFormData.fullName,
+        case_number: pdfFormData.caseNumber,
+        children_names: childrenNames,
         phone: pdfFormData.phone,
-        zipCode: pdfFormData.zipCode,
-        wantConsultation: pdfFormData.wantConsultation,
-        schedule: schedule,
-        startDate: startDate,
-        scheduleType: scheduleType,
-        parentAName: parentAName,
-        parentBName: parentBName,
-        parentAColor: parentAColor,
-        parentBColor: parentBColor,
+        email: pdfFormData.email,
         holidays: holidays.filter((h: any) => h.enabled),
-        effectiveDate: pdfFormData.effectiveDate,
+        schedule_type: scheduleType,
+        start_date: startDate,
+        effective_date: pdfFormData.effectiveDate,
+        want_consultation: pdfFormData.wantConsultation,
+        zip_code: pdfFormData.zipCode,
+        parent_a_name: parentAName,
+        parent_a_color: parentAColor,
+        parent_b_name: parentBName,
+        parent_b_color: parentBColor,
         jurisdiction: pdfFormData.jurisdiction,
-        caseNumber: pdfFormData.caseNumber,
-        childrenNames: childrenNames,
-        currentYear: new Date(startDate).getFullYear()
       };
 
-      // Insert data into Supabase directly
-      try {
-        // Prepare data for insertion
-        const supabaseData = {
-          full_name: pdfFormData.fullName,
-          case_number: pdfFormData.caseNumber,
-          children_names: childrenNames,
-          phone: pdfFormData.phone,
-          email: pdfFormData.email,
-          holidays: holidays.filter((h: any) => h.enabled),
-          schedule_type: scheduleType,
-          start_date: startDate,
-          effective_date: pdfFormData.effectiveDate,
-          want_consultation: pdfFormData.wantConsultation,
-          zip_code: pdfFormData.zipCode,
-          parent_a_name: parentAName,
-          parent_a_color: parentAColor,
-          parent_b_name: parentBName,
-          parent_b_color: parentBColor,
-          jurisdiction: pdfFormData.jurisdiction,
-        };
+      // Insert into parenting_schedules table
+      const { data, error } = await supabase
+        .from('parenting_schedules')
+        .insert([supabaseData])
+        .select();
 
-        // Insert into parenting_schedules table
-        const { data, error } = await supabase
-          .from('parenting_schedules')
-          .insert([supabaseData])
-          .select();
-
-        if (error) {
-          console.error('Supabase insert error:', error);
-        } else {
-          console.log('Successfully inserted into Supabase:', data);
-        }
-      } catch (supabaseError) {
-        console.error('Error inserting into Supabase:', supabaseError);
-        // Don't block the PDF download if Supabase fails
+      if (error) {
+        console.error('Supabase insert error:', error);
+      } else {
+        console.log('Successfully inserted into Supabase:', data);
       }
-      // console.log('Request Data for PDF:', requestData); 
+    } catch (supabaseError) {
+      console.error('Error inserting into Supabase:', supabaseError);
+      // Don't block the PDF download if Supabase fails
+    }
+    // console.log('Request Data for PDF:', requestData); 
 
     try {
       const pdfResponse = await fetch(
@@ -428,30 +501,14 @@ const ParentingScheduleVisualizer = () => {
         throw new Error('Failed to generate PDF');
       }
 
-      // const blob = await pdfResponse.blob();
-      // const url = window.URL.createObjectURL(blob);
-      // const a = document.createElement('a');
-      // a.href = url;
-      // a.download = `parenting-schedule-${startDate}.pdf`;
-      // a.click();
-      // window.URL.revokeObjectURL(url);
-
       setShowPdfDialog(false);
       setShowPdfSuccess(true);
       
       // Hide success message after 5 seconds
       setTimeout(() => setShowPdfSuccess(false), 5000);
       
-      setPdfFormData({
-        fullName: '',
-        email: '',
-        phone: '',
-        zipCode: '',
-        wantConsultation: false,
-        effectiveDate: '',
-        jurisdiction: '',
-        caseNumber: ''
-      });
+      // Don't clear the form data anymore - keep it saved in localStorage
+      // User can manually clear if needed
 
     } catch (error) {
       console.error('Error generating PDF:', error);
@@ -461,7 +518,7 @@ const ParentingScheduleVisualizer = () => {
     }
   };
 
-   return (
+  return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
       {/* <Header /> */}
       
@@ -788,7 +845,7 @@ const ParentingScheduleVisualizer = () => {
                 id="pdfFullName"
                 placeholder="John Doe"
                 value={pdfFormData.fullName}
-                onChange={(e) => setPdfFormData({ ...pdfFormData, fullName: e.target.value })}
+                onChange={(e) => handlePdfFormChange('fullName', e.target.value)}
                 required
               />
             </div>
@@ -802,7 +859,7 @@ const ParentingScheduleVisualizer = () => {
                 type="email"
                 placeholder="john.doe@example.com"
                 value={pdfFormData.email}
-                onChange={(e) => setPdfFormData({ ...pdfFormData, email: e.target.value })}
+                onChange={(e) => handlePdfFormChange('email', e.target.value)}
                 required
               />
             </div>
@@ -814,7 +871,7 @@ const ParentingScheduleVisualizer = () => {
                 type="tel"
                 placeholder="(555) 123-4567"
                 value={pdfFormData.phone}
-                onChange={(e) => setPdfFormData({ ...pdfFormData, phone: e.target.value })}
+                onChange={(e) => handlePdfFormChange('phone', e.target.value)}
               />
             </div>
 
@@ -826,7 +883,7 @@ const ParentingScheduleVisualizer = () => {
                 id="pdfEffectiveDate"
                 type="date"
                 value={pdfFormData.effectiveDate}
-                onChange={(e) => setPdfFormData({ ...pdfFormData, effectiveDate: e.target.value })}
+                onChange={(e) => handlePdfFormChange('effectiveDate', e.target.value)}
                 required
               />
             </div>
@@ -839,7 +896,7 @@ const ParentingScheduleVisualizer = () => {
                 id="pdfJurisdiction"
                 placeholder="County, State"
                 value={pdfFormData.jurisdiction}
-                onChange={(e) => setPdfFormData({ ...pdfFormData, jurisdiction: e.target.value })}
+                onChange={(e) => handlePdfFormChange('jurisdiction', e.target.value)}
                 required
               />
             </div>
@@ -852,7 +909,7 @@ const ParentingScheduleVisualizer = () => {
                 id="pdfCaseNumber"
                 placeholder="e.g., 2024-CV-12345"
                 value={pdfFormData.caseNumber}
-                onChange={(e) => setPdfFormData({ ...pdfFormData, caseNumber: e.target.value })}
+                onChange={(e) => handlePdfFormChange('caseNumber', e.target.value)}
                 required
               />
             </div>
@@ -865,7 +922,7 @@ const ParentingScheduleVisualizer = () => {
                 id="pdfZipCode"
                 placeholder="12345"
                 value={pdfFormData.zipCode}
-                onChange={(e) => setPdfFormData({ ...pdfFormData, zipCode: e.target.value })}
+                onChange={(e) => handlePdfFormChange('zipCode', e.target.value)}
                 required
                 maxLength={10}
               />
@@ -877,7 +934,7 @@ const ParentingScheduleVisualizer = () => {
                 id="pdfConsultation"
                 checked={pdfFormData.wantConsultation}
                 onCheckedChange={(checked) => 
-                  setPdfFormData({ ...pdfFormData, wantConsultation: checked as boolean })
+                  handlePdfFormChange('wantConsultation', checked as boolean)
                 }
               />
               <label
