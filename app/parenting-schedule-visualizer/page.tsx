@@ -43,7 +43,12 @@ const ParentingScheduleVisualizer = () => {
   const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
   const [showFeedbackSuccess, setShowFeedbackSuccess] = useState(false);
   const [allFeedback, setAllFeedback] = useState<any[]>([]);
+  const [displayedFeedback, setDisplayedFeedback] = useState<any[]>([]);
+  const [feedbackPage, setFeedbackPage] = useState(1);
+  const [hasMoreFeedback, setHasMoreFeedback] = useState(false);
   const [isLoadingFeedback, setIsLoadingFeedback] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const FEEDBACK_PER_PAGE = 10;
 
   const [pdfFormData, setPdfFormData] = useState({
     fullName: '',
@@ -148,17 +153,29 @@ const ParentingScheduleVisualizer = () => {
     fetchAllFeedback();
   }, [isMounted]);
 
+  // Update displayed feedback when allFeedback changes
+  useEffect(() => {
+    if (allFeedback.length > 0) {
+      const itemsToShow = allFeedback.slice(0, feedbackPage * FEEDBACK_PER_PAGE);
+      setDisplayedFeedback(itemsToShow);
+      setHasMoreFeedback(allFeedback.length > itemsToShow.length);
+    } else {
+      setDisplayedFeedback([]);
+      setHasMoreFeedback(false);
+    }
+  }, [allFeedback, feedbackPage]);
+
   const fetchAllFeedback = async () => {
     if (!supabase) return;
     
     setIsLoadingFeedback(true);
+    setFeedbackPage(1); // Reset to first page
     try {
       const { data, error } = await supabase
         .from('tools_feedback')
         .select('*')
         .eq('tool_name', 'parenting-schedule-visualizer')
-        .order('created_at', { ascending: false })
-        .limit(50);
+        .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Error fetching feedback:', error);
@@ -170,6 +187,15 @@ const ParentingScheduleVisualizer = () => {
     } finally {
       setIsLoadingFeedback(false);
     }
+  };
+
+  const loadMoreFeedback = () => {
+    setIsLoadingMore(true);
+    // Simulate slight delay for better UX
+    setTimeout(() => {
+      setFeedbackPage(prev => prev + 1);
+      setIsLoadingMore(false);
+    }, 300);
   };
 
   const toggleHoliday = useCallback((id: string) => {
@@ -984,44 +1010,69 @@ const ParentingScheduleVisualizer = () => {
                     <p>No feedback yet. Be the first to share your thoughts!</p>
                   </div>
                 ) : (
-                  <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
-                    {allFeedback.map((feedback) => (
-                      <div 
-                        key={feedback.id}
-                        className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
-                      >
-                        <div className="flex items-start justify-between mb-2">
-                          <div className="flex gap-1">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <Star
-                                key={star}
-                                className={`w-4 h-4 ${
-                                  star <= feedback.rating
-                                    ? 'fill-yellow-400 text-yellow-400'
-                                    : 'text-gray-300'
-                                }`}
-                              />
-                            ))}
+                  <>
+                    <div className="space-y-4">
+                      {displayedFeedback.map((feedback) => (
+                        <div 
+                          key={feedback.id}
+                          className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                        >
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex gap-1">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star
+                                  key={star}
+                                  className={`w-4 h-4 ${
+                                    star <= feedback.rating
+                                      ? 'fill-yellow-400 text-yellow-400'
+                                      : 'text-gray-300'
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                            <span className="text-xs text-gray-500">
+                              {new Date(feedback.created_at).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                              })}
+                            </span>
                           </div>
-                          <span className="text-xs text-gray-500">
-                            {new Date(feedback.created_at).toLocaleDateString('en-US', {
-                              year: 'numeric',
-                              month: 'short',
-                              day: 'numeric'
-                            })}
-                          </span>
+                          <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                            {feedback.feedback_text}
+                          </p>
+                          {feedback.email && (
+                            <div className="mt-2 text-xs text-gray-500 italic">
+                              - {feedback.email}
+                            </div>
+                          )}
                         </div>
-                        <p className="text-sm text-gray-700 whitespace-pre-wrap">
-                          {feedback.feedback_text}
-                        </p>
-                        {feedback.email && (
-                          <div className="mt-2 text-xs text-gray-500 italic">
-                            - {feedback.email}
-                          </div>
-                        )}
+                      ))}
+                    </div>
+                    
+                    {/* Load More Button */}
+                    {hasMoreFeedback && (
+                      <div className="mt-6 text-center">
+                        <Button
+                          onClick={loadMoreFeedback}
+                          disabled={isLoadingMore}
+                          variant="outline"
+                          className="w-full sm:w-auto"
+                        >
+                          {isLoadingMore ? (
+                            <>
+                              <span className="mr-2">Loading...</span>
+                              <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+                            </>
+                          ) : (
+                            <>
+                              Load More ({allFeedback.length - displayedFeedback.length} remaining)
+                            </>
+                          )}
+                        </Button>
                       </div>
-                    ))}
-                  </div>
+                    )}
+                  </>
                 )}
               </CardContent>
             </Card>
