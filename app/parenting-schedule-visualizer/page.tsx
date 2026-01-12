@@ -1313,7 +1313,7 @@ const ParentingScheduleVisualizer = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="pdfPhone">Phone (Optional)</Label>
+                <Label htmlFor="pdfPhone">Phone</Label>
                 <Input
                   id="pdfPhone"
                   type="tel"
@@ -1330,7 +1330,7 @@ const ParentingScheduleVisualizer = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="pdfEffectiveDate">
-                  Effective Date (Optional)
+                  Effective Date
                 </Label>
                 <Input
                   id="pdfEffectiveDate"
@@ -1342,7 +1342,7 @@ const ParentingScheduleVisualizer = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="pdfJurisdiction">
-                  Jurisdiction (Optional)
+                  Jurisdiction
                 </Label>
                 <Input
                   id="pdfJurisdiction"
@@ -1354,7 +1354,7 @@ const ParentingScheduleVisualizer = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="pdfCaseNumber">
-                  Case Number (Optional)
+                  Case Number
                 </Label>
                 <Input
                   id="pdfCaseNumber"
@@ -1382,7 +1382,7 @@ const ParentingScheduleVisualizer = () => {
 
             <div className="space-y-2">
               <Label htmlFor="pdfExchangeTimeLocation">
-                Exchange Time and Location (Optional)
+                Exchange Time and Location
               </Label>
               <Input
                 id="pdfExchangeTimeLocation"
@@ -1394,7 +1394,7 @@ const ParentingScheduleVisualizer = () => {
 
             <div className="space-y-2">
               <Label htmlFor="pdfRightOfFirstRefusal">
-                Right of First Refusal (Optional)
+                Right of First Refusal
               </Label>
               <Textarea
                 id="pdfRightOfFirstRefusal"
@@ -1408,7 +1408,7 @@ const ParentingScheduleVisualizer = () => {
 
             <div className="space-y-2">
               <Label htmlFor="pdfMakeUpTime">
-                Make-Up Time (Optional)
+                Make-Up Time
               </Label>
               <Input
                 id="pdfMakeUpTime"
@@ -1420,7 +1420,7 @@ const ParentingScheduleVisualizer = () => {
 
             <div className="space-y-2">
               <Label htmlFor="pdfVirtualVisitation">
-                Virtual Visitation (Optional)
+                Virtual Visitation
               </Label>
               <Input
                 id="pdfVirtualVisitation"
