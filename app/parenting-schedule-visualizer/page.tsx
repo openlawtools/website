@@ -59,6 +59,10 @@ const ParentingScheduleVisualizer = () => {
     effectiveDate: '',
     jurisdiction: '',
     caseNumber: '',
+    exchangeTimeLocation: "6:00 PM on exchange days; Children's school (during school year) / [address] (nonschool days)",
+    rightOfFirstRefusal: 'Yes - If parent unavailable for more than 4 hours during scheduled time, other parent gets first option',
+    makeUpTime: 'Permitted within 30 days if time is missed due to emergency or illness',
+    virtualVisitation: 'Non-custodial parent may video call children daily between 7:00-7:30 PM',
     // Schedule configuration fields
     startDate: '',
     scheduleType: 'alternating-weeks',
@@ -82,7 +86,17 @@ const ParentingScheduleVisualizer = () => {
     if (savedFormData) {
       try {
         const parsedData = JSON.parse(savedFormData);
-        setPdfFormData(parsedData);
+        
+        // Merge saved data with default values to preserve new fields
+        setPdfFormData(prev => ({
+          ...prev,
+          ...parsedData,
+          // Ensure new fields have default values if not in saved data
+          exchangeTimeLocation: parsedData.exchangeTimeLocation || prev.exchangeTimeLocation,
+          rightOfFirstRefusal: parsedData.rightOfFirstRefusal || prev.rightOfFirstRefusal,
+          makeUpTime: parsedData.makeUpTime || prev.makeUpTime,
+          virtualVisitation: parsedData.virtualVisitation || prev.virtualVisitation,
+        }));
         
         // Restore schedule configuration if it exists in saved data
         if (parsedData.startDate) setStartDate(parsedData.startDate);
@@ -568,6 +582,10 @@ const ParentingScheduleVisualizer = () => {
       effectiveDate: pdfFormData.effectiveDate,
       jurisdiction: pdfFormData.jurisdiction,
       caseNumber: pdfFormData.caseNumber,
+      exchangeTimeLocation: pdfFormData.exchangeTimeLocation,
+      rightOfFirstRefusal: pdfFormData.rightOfFirstRefusal,
+      makeUpTime: pdfFormData.makeUpTime,
+      virtualVisitation: pdfFormData.virtualVisitation,
       childrenNames: childrenNames,
       currentYear: new Date(startDate).getFullYear()
     };
@@ -592,6 +610,10 @@ const ParentingScheduleVisualizer = () => {
         parent_b_name: parentBName,
         parent_b_color: parentBColor,
         jurisdiction: pdfFormData.jurisdiction,
+        exchange_time_location: pdfFormData.exchangeTimeLocation,
+        right_of_first_refusal: pdfFormData.rightOfFirstRefusal,
+        make_up_time: pdfFormData.makeUpTime,
+        virtual_visitation: pdfFormData.virtualVisitation,
       };
 
       // Insert into parenting_schedules table
@@ -1244,7 +1266,7 @@ const ParentingScheduleVisualizer = () => {
 
       {/* PDF Download Dialog */}
       <Dialog open={showPdfDialog} onOpenChange={setShowPdfDialog}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <FileDown className="w-5 h-5 text-purple-600" />
@@ -1256,103 +1278,156 @@ const ParentingScheduleVisualizer = () => {
           </DialogHeader>
           
           <form onSubmit={handlePdfFormSubmit} className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="pdfFullName">
-                Full Name <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="pdfFullName"
-                placeholder="John Doe"
-                value={pdfFormData.fullName}
-                onChange={(e) => handlePdfFormChange('fullName', e.target.value)}
-                required
-              />
+            {/* Grid layout for 2 columns on both mobile and desktop */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="pdfFullName">
+                  Full Name <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="pdfFullName"
+                  placeholder="John Doe"
+                  value={pdfFormData.fullName}
+                  onChange={(e) => handlePdfFormChange('fullName', e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="pdfEmail">
+                  Email Address <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="pdfEmail"
+                  type="email"
+                  placeholder="john.doe@example.com"
+                  value={pdfFormData.email}
+                  onChange={(e) => handlePdfFormChange('email', e.target.value)}
+                  pattern="[^\s@]+@[^\s@]+\.[^\s@]+"
+                  title="Please enter a valid email address (e.g., name@example.com)"
+                  required
+                />
+                {pdfFormData.email && !isValidEmail(pdfFormData.email) && (
+                  <p className="text-xs text-red-500">Please enter a valid email address</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="pdfPhone">Phone (Optional)</Label>
+                <Input
+                  id="pdfPhone"
+                  type="tel"
+                  placeholder="555-123-4567"
+                  value={pdfFormData.phone}
+                  onChange={(e) => handlePdfFormChange('phone', e.target.value)}
+                  maxLength={12}
+                  title="Enter 10-digit phone number (format: xxx-xxx-xxxx)"
+                />
+                {pdfFormData.phone && pdfFormData.phone.replace(/\D/g, '').length > 0 && pdfFormData.phone.replace(/\D/g, '').length !== 10 && (
+                  <p className="text-xs text-red-500">Please enter a complete 10-digit phone number</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="pdfEffectiveDate">
+                  Effective Date (Optional)
+                </Label>
+                <Input
+                  id="pdfEffectiveDate"
+                  type="date"
+                  value={pdfFormData.effectiveDate}
+                  onChange={(e) => handlePdfFormChange('effectiveDate', e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="pdfJurisdiction">
+                  Jurisdiction (Optional)
+                </Label>
+                <Input
+                  id="pdfJurisdiction"
+                  placeholder="County, State"
+                  value={pdfFormData.jurisdiction}
+                  onChange={(e) => handlePdfFormChange('jurisdiction', e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="pdfCaseNumber">
+                  Case Number (Optional)
+                </Label>
+                <Input
+                  id="pdfCaseNumber"
+                  placeholder="e.g., 2024-CV-12345"
+                  value={pdfFormData.caseNumber}
+                  onChange={(e) => handlePdfFormChange('caseNumber', e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="pdfZipCode">
+                  Zip Code <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="pdfZipCode"
+                  placeholder="12345"
+                  value={pdfFormData.zipCode}
+                  onChange={(e) => handlePdfFormChange('zipCode', e.target.value)}
+                  required
+                  maxLength={10}
+                />
+                <p className="text-xs text-gray-500">For lawyer matching in your area</p>
+              </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="pdfEmail">
-                Email Address <span className="text-red-500">*</span>
+              <Label htmlFor="pdfExchangeTimeLocation">
+                Exchange Time and Location (Optional)
               </Label>
               <Input
-                id="pdfEmail"
-                type="email"
-                placeholder="john.doe@example.com"
-                value={pdfFormData.email}
-                onChange={(e) => handlePdfFormChange('email', e.target.value)}
-                pattern="[^\s@]+@[^\s@]+\.[^\s@]+"
-                title="Please enter a valid email address (e.g., name@example.com)"
-                required
+                id="pdfExchangeTimeLocation"
+                value={pdfFormData.exchangeTimeLocation}
+                onChange={(e) => handlePdfFormChange('exchangeTimeLocation', e.target.value)}
               />
-              {pdfFormData.email && !isValidEmail(pdfFormData.email) && (
-                <p className="text-xs text-red-500">Please enter a valid email address</p>
-              )}
+              <p className="text-xs text-gray-500">Specify when and where child exchanges occur</p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="pdfPhone">Phone (Optional)</Label>
-              <Input
-                id="pdfPhone"
-                type="tel"
-                placeholder="555-123-4567"
-                value={pdfFormData.phone}
-                onChange={(e) => handlePdfFormChange('phone', e.target.value)}
-                maxLength={12}
-                title="Enter 10-digit phone number (format: xxx-xxx-xxxx)"
+              <Label htmlFor="pdfRightOfFirstRefusal">
+                Right of First Refusal (Optional)
+              </Label>
+              <Textarea
+                id="pdfRightOfFirstRefusal"
+                value={pdfFormData.rightOfFirstRefusal}
+                onChange={(e) => handlePdfFormChange('rightOfFirstRefusal', e.target.value)}
+                rows={2}
+                className="resize-none"
               />
-              {pdfFormData.phone && pdfFormData.phone.replace(/\D/g, '').length > 0 && pdfFormData.phone.replace(/\D/g, '').length !== 10 && (
-                <p className="text-xs text-red-500">Please enter a complete 10-digit phone number</p>
-              )}
+              <p className="text-xs text-gray-500">Describe the conditions for offering parenting time to the other parent</p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="pdfEffectiveDate">
-                Effective Date (Optional)
+              <Label htmlFor="pdfMakeUpTime">
+                Make-Up Time (Optional)
               </Label>
               <Input
-                id="pdfEffectiveDate"
-                type="date"
-                value={pdfFormData.effectiveDate}
-                onChange={(e) => handlePdfFormChange('effectiveDate', e.target.value)}
+                id="pdfMakeUpTime"
+                value={pdfFormData.makeUpTime}
+                onChange={(e) => handlePdfFormChange('makeUpTime', e.target.value)}
               />
+              <p className="text-xs text-gray-500">Specify rules for making up missed parenting time</p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="pdfJurisdiction">
-                Jurisdiction (Optional)
+              <Label htmlFor="pdfVirtualVisitation">
+                Virtual Visitation (Optional)
               </Label>
               <Input
-                id="pdfJurisdiction"
-                placeholder="County, State"
-                value={pdfFormData.jurisdiction}
-                onChange={(e) => handlePdfFormChange('jurisdiction', e.target.value)}
+                id="pdfVirtualVisitation"
+                value={pdfFormData.virtualVisitation}
+                onChange={(e) => handlePdfFormChange('virtualVisitation', e.target.value)}
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="pdfCaseNumber">
-                Case Number (Optional)
-              </Label>
-              <Input
-                id="pdfCaseNumber"
-                placeholder="e.g., 2024-CV-12345"
-                value={pdfFormData.caseNumber}
-                onChange={(e) => handlePdfFormChange('caseNumber', e.target.value)}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="pdfZipCode">
-                Zip Code <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="pdfZipCode"
-                placeholder="12345"
-                value={pdfFormData.zipCode}
-                onChange={(e) => handlePdfFormChange('zipCode', e.target.value)}
-                required
-                maxLength={10}
-              />
-              <p className="text-xs text-gray-500">For lawyer matching in your area</p>
+              <p className="text-xs text-gray-500">Describe video call or virtual contact arrangements</p>
             </div>
 
             <div className="flex items-start space-x-2 pt-2">
