@@ -601,7 +601,7 @@ const ParentingScheduleVisualizer = () => {
         email: pdfFormData.email,
         holidays: holidays.filter((h: any) => h.enabled),
         schedule_type: scheduleType,
-        start_date: startDate,
+        start_date: startDate,  
         effective_date: pdfFormData.effectiveDate,
         want_consultation: pdfFormData.wantConsultation,
         zip_code: pdfFormData.zipCode,
@@ -610,10 +610,10 @@ const ParentingScheduleVisualizer = () => {
         parent_b_name: parentBName,
         parent_b_color: parentBColor,
         jurisdiction: pdfFormData.jurisdiction,
-        exchange_time_location: pdfFormData.exchangeTimeLocation,
-        right_of_first_refusal: pdfFormData.rightOfFirstRefusal,
-        make_up_time: pdfFormData.makeUpTime,
-        virtual_visitation: pdfFormData.virtualVisitation,
+        exchangeTimeLocation: pdfFormData.exchangeTimeLocation,
+        rightOfFirstRefusal: pdfFormData.rightOfFirstRefusal,
+        makeUpTime: pdfFormData.makeUpTime,
+        virtualVisitation: pdfFormData.virtualVisitation,
       };
 
       // Insert into parenting_schedules table
@@ -774,14 +774,14 @@ const ParentingScheduleVisualizer = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Users className="w-5 h-5" />
-                Schedule Configuration
+                Customize Your Plan
               </CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={generateSchedule} name="google-sheet" className="space-y-6">
                 {/* Basic Information */}
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-lg">Basic Information</h3>
+                  <h3 className="font-semibold text-lg">Case Details</h3>
                   
                   <div className="space-y-2">
                     <Label htmlFor="startDate">Start Date</Label>
@@ -795,7 +795,7 @@ const ParentingScheduleVisualizer = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="scheduleType">Schedule Type</Label>
+                    <Label htmlFor="scheduleType">Rotation Pattern</Label>
                     <Select value={scheduleType} onValueChange={setScheduleType}>
                       <SelectTrigger id="scheduleType">
                         <SelectValue />
@@ -835,7 +835,7 @@ const ParentingScheduleVisualizer = () => {
 
                 {/* Parent A Settings */}
                 <div className="space-y-4 pt-4 border-t">
-                  <h3 className="font-semibold text-lg">Parent A</h3>
+                  <h3 className="font-semibold text-lg">Parent 1</h3>
                   
                   <div className="grid grid-cols-[1fr_auto] gap-3 items-end">
                     <div className="space-y-2">
@@ -863,7 +863,7 @@ const ParentingScheduleVisualizer = () => {
 
                 {/* Parent B Settings */}
                 <div className="space-y-4 pt-4 border-t">
-                  <h3 className="font-semibold text-lg">Parent B</h3>
+                  <h3 className="font-semibold text-lg">Parent 2</h3>
                   
                   <div className="grid grid-cols-[1fr_auto] gap-3 items-end">
                     <div className="space-y-2">
@@ -893,7 +893,7 @@ const ParentingScheduleVisualizer = () => {
                 <div className="space-y-4 pt-4 border-t">
                   <h3 className="font-semibold text-lg flex items-center gap-2">
                     <Gift className="w-5 h-5" />
-                    Holiday Overrides
+                    Holidays & Special Days
                   </h3>
                   
                   <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
@@ -939,7 +939,7 @@ const ParentingScheduleVisualizer = () => {
                 </div>
 
                 <Button type="submit" className="w-full" size="lg">
-                  Generate Schedule
+                  Create My Plan
                 </Button>
               </form>
             </CardContent>
