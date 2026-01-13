@@ -728,17 +728,16 @@ const ParentingScheduleVisualizer = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
-      {/* <Header /> */}
-      
-      {/* Banner Section */}
-      <section className="bg-slate-800 text-white py-16">
+    <div className="min-h-screen bg-background">
+      {/* Navigation Bar - Clean white/cream background matching homepage */}
+     
+      {/* Hero Section - Clean background with serif headline */}
+      <section className="relative py-16 md:py-20 bg-background">
         <div className="container mx-auto px-4 text-center">
-          {/* <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-600 to-blue-600 rounded-2xl mb-6">
-            <Calendar className="w-8 h-8 text-white" />
-          </div> */}
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">Parenting Schedule Visualizer</h1>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold leading-tight tracking-tight mb-6">
+            Parenting Schedule Visualizer
+          </h1>
+          <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto">
             Create a clear, color-coded custody calendar that works for your family. 
             Visualize different custody arrangements and plan for holidays with ease.
           </p>
@@ -774,14 +773,14 @@ const ParentingScheduleVisualizer = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Users className="w-5 h-5" />
-                Customize Your Plan
+                Schedule Configuration
               </CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={generateSchedule} name="google-sheet" className="space-y-6">
                 {/* Basic Information */}
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-lg">Case Details</h3>
+                  <h3 className="font-semibold text-lg">Schedule Details</h3>
                   
                   <div className="space-y-2">
                     <Label htmlFor="startDate">Start Date</Label>
@@ -795,7 +794,7 @@ const ParentingScheduleVisualizer = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="scheduleType">Rotation Pattern</Label>
+                    <Label htmlFor="scheduleType">Schedule Type</Label>
                     <Select value={scheduleType} onValueChange={setScheduleType}>
                       <SelectTrigger id="scheduleType">
                         <SelectValue />
@@ -938,8 +937,13 @@ const ParentingScheduleVisualizer = () => {
                   </div>
                 </div>
 
-                <Button type="submit" className="w-full" size="lg">
-                  Create My Plan
+                {/* Updated Generate Button - Emerald Green Accent */}
+                <Button 
+                  type="submit" 
+                  className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" 
+                  size="lg"
+                >
+                  Generate Schedule
                 </Button>
               </form>
             </CardContent>
@@ -947,15 +951,15 @@ const ParentingScheduleVisualizer = () => {
 
           {/* Main Display Area */}
           <div className="space-y-6">
-            {/* Info Card */}
+            {/* Info Card - Updated styling */}
             {!schedule && (
-              <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+              <Card className="bg-accent/10 border-accent/20">
                 <CardContent className="pt-6">
                   <div className="flex items-start gap-3">
-                    <Info className="w-5 h-5 text-blue-600 mt-0.5" />
+                    <Info className="w-5 h-5 text-accent mt-0.5" />
                     <div>
-                      <h3 className="font-semibold text-blue-900 mb-2">Getting Started</h3>
-                      <p className="text-sm text-blue-800">
+                      <h3 className="font-semibold mb-2">Getting Started</h3>
+                      <p className="text-sm text-muted-foreground">
                         Fill in the form on the left to generate your customized parenting schedule. 
                         You can visualize different custody arrangements, add holiday overrides, 
                         and export the calendar for your records.
@@ -987,11 +991,12 @@ const ParentingScheduleVisualizer = () => {
                   </CardTitle>
                   {schedule && (
                     <div className="flex gap-2 flex-wrap">
+                      {/* Updated PDF Button */}
                       <Button 
                         variant="outline" 
                         size="sm"
                         onClick={handlePdfDownloadClick}
-                        className="flex items-center gap-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700 border-none"
+                        className="flex items-center gap-1 bg-accent hover:bg-accent/90 text-accent-foreground border-none"
                       >
                         <FileDown className="w-4 h-4" />
                         PDF
@@ -1029,22 +1034,22 @@ const ParentingScheduleVisualizer = () => {
               </CardContent>
             </Card>
 
-            {/* Feedback Card */}
-            <Card className="shadow-lg border-2 border-purple-100">
+            {/* Feedback Card - Updated styling */}
+            <Card className="shadow-lg border-2 border-accent/20">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <MessageSquare className="w-5 h-5 text-purple-600" />
+                  <MessageSquare className="w-5 h-5 text-accent" />
                   Help Us Improve
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">
                     Your feedback helps us make this tool better for everyone. Share your thoughts anonymously!
                   </p>
                   <Button 
                     onClick={() => setShowFeedback(true)}
-                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                    className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
                   >
                     <MessageSquare className="w-4 h-4 mr-2" />
                     Provide Feedback
@@ -1053,15 +1058,15 @@ const ParentingScheduleVisualizer = () => {
               </CardContent>
             </Card>
 
-            {/* All Feedback Display */}
+            {/* All Feedback Display - Updated styling */}
             <Card className="shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <MessageSquare className="w-5 h-5 text-purple-600" />
+                    <MessageSquare className="w-5 h-5 text-accent" />
                     Community Feedback
                   </div>
-                  <span className="text-sm font-normal text-gray-500">
+                  <span className="text-sm font-normal text-muted-foreground">
                     {allFeedback.length} {allFeedback.length === 1 ? 'review' : 'reviews'}
                   </span>
                 </CardTitle>
@@ -1168,12 +1173,12 @@ const ParentingScheduleVisualizer = () => {
         </div>
       )}
 
-      {/* Feedback Dialog */}
+      {/* Feedback Dialog - Updated buttons */}
       <Dialog open={showFeedback} onOpenChange={setShowFeedback}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <MessageSquare className="w-5 h-5 text-purple-600" />
+              <MessageSquare className="w-5 h-5 text-accent" />
               Share Your Feedback
             </DialogTitle>
             <DialogDescription>
@@ -1245,7 +1250,7 @@ const ParentingScheduleVisualizer = () => {
               <Button
                 type="submit"
                 disabled={isSubmittingFeedback}
-                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                className="bg-accent hover:bg-accent/90 text-accent-foreground"
               >
                 {isSubmittingFeedback ? (
                   <>
@@ -1264,12 +1269,12 @@ const ParentingScheduleVisualizer = () => {
         </DialogContent>
       </Dialog>
 
-      {/* PDF Download Dialog */}
+      {/* PDF Download Dialog - Updated button */}
       <Dialog open={showPdfDialog} onOpenChange={setShowPdfDialog}>
         <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <FileDown className="w-5 h-5 text-purple-600" />
+              <FileDown className="w-5 h-5 text-accent" />
               Get Schedule as PDF via email
             </DialogTitle>
             <DialogDescription>
@@ -1458,7 +1463,7 @@ const ParentingScheduleVisualizer = () => {
               <Button
                 type="submit"
                 disabled={isDownloading}
-                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                className="bg-accent hover:bg-accent/90 text-accent-foreground"
               >
                 {isDownloading ? (
                   <>
